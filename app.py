@@ -1,12 +1,17 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, request, jsonify, render_template
 import requests
 from bs4 import BeautifulSoup
 import openai
 
+load_dotenv()
+
 app = Flask(__name__)
 
 # OpenAI GPT-3 API Key
-openai.api_key = ''
+openai.api_key = os.getenv("OPENAI_API_KEY")
+port = os.getenv("port")
 
 @app.route('/')
 def index():
@@ -29,7 +34,6 @@ def crawl_url():
         return jsonify({"success": True, "text": text})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
-
 @app.route('/generate-instagram-content', methods=['POST'])
 def generate_instagram_content():
     data = request.get_json()
@@ -45,4 +49,4 @@ def generate_instagram_content():
     return jsonify({"content": response.choices[0].text.strip()})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=port)

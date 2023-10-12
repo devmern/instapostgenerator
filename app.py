@@ -34,6 +34,8 @@ def crawl_url():
         return jsonify({"success": True, "text": text})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
+
+
 @app.route('/generate-instagram-content', methods=['POST'])
 def generate_instagram_content():
     data = request.get_json()
@@ -46,7 +48,37 @@ def generate_instagram_content():
         max_tokens=100
     )
 
-    return jsonify({"content": response.choices[0].text.strip()})
+    post_content = response.choices[0].text.strip()
+
+    # Generate relevant hashtags using ChatGPT
+    hashtags_response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=f"Generate relevant hashtags for:\n{post_content}\n\nHashtags:",
+        max_tokens=100  # You can adjust this number as needed
+    )
+
+    hashtags = hashtags_response.choices[0].text.strip().split('\n')
+
+    # Generate relevant locations using ChatGPT
+    locations_response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=f"Generate relevant locations for:\n{post_content}\n\nLocations:",
+        max_tokens=60  # You can adjust this number as needed
+    )
+
+    locations = locations_response.choices[0].text.strip().split('\n')
+
+    # Generate relevant users to tag using ChatGPT
+    users_response = openai.Completion.create(
+        engine="text-davinci-002",
+        prompt=f"Generate relevant Instagram users to tag for:\n{post_content}\n\nUsers:",
+        max_tokens=60  # You can adjust this number as needed
+    )
+
+    users_to_tag = users_response.choices[0].text.strip().split('\n')
+
+    return jsonify({"content": post_content, "hashtags": hashtags, "locations": locations, "users_to_tag": users_to_tag})
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=port)

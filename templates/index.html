@@ -23,17 +23,26 @@ document.getElementById('urlForm').addEventListener('submit', async function (ev
 
     // Fetch the URL content
     try {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = "";
+
         const response = await fetch(`/crawl?url=${url}`);
         const data = await response.json();
 
         if (data.success) {
             // Display the extracted text content
-            const resultDiv = document.getElementById('result');
+            
             resultDiv.innerHTML = `<h2>Extracted Text:</h2><p>${data.text}</p>`;
             
             // Generate Instagram post content using ChatGPT API
             const instagramContent = await generateInstagramContent(data.text);
-            resultDiv.innerHTML += `<h2>Instagram Post Content:</h2><p>${instagramContent}</p>`;
+
+            resultDiv.innerHTML += `<h2>Instagram Post Content:</h2><p>${instagramContent.content}</p>`;
+            resultDiv.innerHTML += `<h2>Instagram Post Hashtag:</h2><p>${instagramContent.hashtags}</p>`;
+            resultDiv.innerHTML += `<h2>Instagram Post Location:</h2><p>${instagramContent.locations}</p>`;
+            resultDiv.innerHTML += `<h2>Instagram Post Users:</h2><p>${instagramContent.users_to_tag}</p>`;
+
+
         } else {
             alert('Error: Unable to crawl the URL.');
         }
@@ -44,7 +53,7 @@ document.getElementById('urlForm').addEventListener('submit', async function (ev
 });
 
 async function generateInstagramContent(text) {
-    console.log(text)
+    //console.log(text)
     // Call the ChatGPT API to generate Instagram post content using the extracted text
     const response = await fetch('/generate-instagram-content', {
         method: 'POST',
@@ -55,7 +64,7 @@ async function generateInstagramContent(text) {
     });
 
     const data = await response.json();
-    return data.content;
+    return data;
 }
 
 </script>

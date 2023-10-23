@@ -2,14 +2,36 @@
 <html>
 <head>
     <title>Web Crawler and Instagram Post Generator</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style>
+        .loader {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 2s linear infinite;
+            margin-top: -7px;
+            margin-left: 15px;
+        }
+
+        @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
     <h1>Web Crawler and Instagram Post Generator</h1>
-    <form id="urlForm">
+    <form id="urlForm" style="display: -webkit-inline-box;">
         <label for="urlInput">Enter a URL:</label>
         <input type="text" id="urlInput" name="urlInput" value="http://bbc.co.uk" placeholder="https://example.com" required>
-        <button type="submit">Submit</button>
+        <button type="submit">Submit</button><div class="loader" id="loader" style="display: none"></div>
     </form>
+    
+    <BR><BR><button onclick="exportToPDF()">Export as PDF</button>
     <div id="result"></div>
 </body>
 
@@ -20,7 +42,7 @@
 document.getElementById('urlForm').addEventListener('submit', async function (event) {
     event.preventDefault();
     const url = document.getElementById('urlInput').value;
-
+    document.getElementById('loader').style.display = 'block'
     // Fetch the URL content
     try {
         const resultDiv = document.getElementById('result');
@@ -35,20 +57,28 @@ document.getElementById('urlForm').addEventListener('submit', async function (ev
             resultDiv.innerHTML = `<h2>Extracted Text:</h2><p>${data.text}</p>`;
             
             // Generate Instagram post content using ChatGPT API
-            const instagramContent = await generateInstagramContent(data.text);
+            const content_resp = await generateInstagramContent(data.text);
 
-            resultDiv.innerHTML += `<h2>Instagram Post Content:</h2><p>${instagramContent.content}</p>`;
-            resultDiv.innerHTML += `<h2>Instagram Post Hashtag:</h2><p>${instagramContent.hashtags}</p>`;
-            resultDiv.innerHTML += `<h2>Instagram Post Location:</h2><p>${instagramContent.locations}</p>`;
-            resultDiv.innerHTML += `<h2>Instagram Post Users:</h2><p>${instagramContent.users_to_tag}</p>`;
+            resultDiv.innerHTML += `<h2>Instagram Post Content:</h2><p>${content_resp.instagram_post+content_resp.insta_hashtag} <BR> Locations: ${content_resp.insta_locations}</p>`;
+            
 
+            resultDiv.innerHTML += `<h2>Facebook Post Content:</h2><p>${content_resp.facebook_post+ ' '+ content_resp.fb_hashtags}</p>`;
+
+            resultDiv.innerHTML += `<h2>X Post Content:</h2><p>${content_resp.twitter_post+' '+content_resp.x_hashtags}</p>`;
+
+            
+            // resultDiv.innerHTML += `<h2>Instagram Post Location:</h2><p>${instagramContent.locations}</p>`;
+            // resultDiv.innerHTML += `<h2>Instagram Post Users:</h2><p>${instagramContent.users_to_tag}</p>`;
+            document.getElementById('loader').style.display = 'none'
 
         } else {
             alert('Error: Unable to crawl the URL.');
+            document.getElementById('loader').style.display = 'none'
         }
     } catch (error) {
         alert('An error occurred while processing the request.');
         console.log(error);
+        document.getElementById('loader').style.display = 'none'
     }
 });
 
@@ -67,6 +97,16 @@ async function generateInstagramContent(text) {
     return data;
 }
 
+function exportToPDF() {
+
+    var element = document.getElementById('result');
+    html2pdf(element);
+  
+}
+
+
 </script>
+
+
 
 </html>
